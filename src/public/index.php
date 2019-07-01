@@ -30,7 +30,7 @@ $app->group('/api', function () use ($app) {
     // Version group
     $app->group('/v1', function () use ($app) {
 		$app->get('/users', function (Request $request, Response $response, array $args) {
-   			$sql = "select * FROM user";
+   			$sql = "select * FROM user ORDER BY name";
     			try {
 				$stmt = $this->db->query($sql);
         			$wines = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -57,7 +57,7 @@ $app->group('/api', function () use ($app) {
 		});
 
 		$app->get('/events', function (Request $request, Response $response, array $args) {
-   			$sql = "select * FROM event";
+   			$sql = "select * FROM event ORDER BY id";
     			try {
 				$stmt = $this->db->query($sql);
         			$wines = $stmt->fetchAll(PDO::FETCH_OBJ);
@@ -81,8 +81,10 @@ $app->group('/api', function () use ($app) {
 		});
 		$app->get('/occurences', function (Request $request, Response $response, array $args) {
    			$sql = "select * FROM occurence";
+   			$sql2 = "SELECT occurence.id,occurence.timestamp,user.name,event.event_name,event.event_description FROM occurence,event,user WHERE occurence.eventId = event.id and occurence.userId = user.id";
+			$sql3 = "SELECT occurence.id,occurence.timestamp as time,user.name as user,event.event_name as what,event.event_description as detail FROM occurence,event,user WHERE occurence.eventId = event.id and occurence.userId = user.id ORDER BY time;";
     			try {
-				$stmt = $this->db->query($sql);
+				$stmt = $this->db->query($sql3);
         			$wines = $stmt->fetchAll(PDO::FETCH_OBJ);
         			$response->getBody()->write(json_encode($wines));
     			} catch(PDOException $e) {
