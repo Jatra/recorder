@@ -80,8 +80,6 @@ $app->group('/api', function () use ($app) {
 			}
 		});
 		$app->get('/occurences', function (Request $request, Response $response, array $args) {
-   			$sql = "select * FROM occurence";
-   			$sql2 = "SELECT occurence.id,occurence.timestamp,user.name,event.event_name,event.event_description FROM occurence,event,user WHERE occurence.eventId = event.id and occurence.userId = user.id";
 			$sql3 = "SELECT occurence.id,occurence.timestamp as time,user.name as user,event.event_name as what,event.event_description as detail FROM occurence,event,user WHERE occurence.eventId = event.id and occurence.userId = user.id ORDER BY time;";
     			try {
 				$stmt = $this->db->query($sql3);
@@ -122,7 +120,18 @@ $app->group('/api', function () use ($app) {
 			$stmt->bindParam(userId, $occurence->userId);
 		        $stmt->execute();
 		        $occurence->id = $this->db->lastInsertId();
-			$response->getBody()->write(json_encode($occurence));
+
+                        $sql3 = "SELECT occurence.id,occurence.timestamp as time,user.name as user,event.event_name as what,event.event_description as detail FROM occurence,event,user WHERE occurence.eventId = event.id and occurence.userId = user.id and occurence.id = :id;";
+                        try {
+                        	$stmt = $this->db->prepare($sql3);
+                            $stmt->bindParam(id, $occurence->id);
+                            $stmt->execute();
+	                        $occurence = $stmt->fetch();
+	                        $response->getBody()->write(json_encode($occurence));
+	                    } catch(PDOException $e) {
+	                            $response->getBody()->write('{"error":{"text":'. $e->getMessage() .'}}');
+	                    }
+
 		});
 	});
 });
